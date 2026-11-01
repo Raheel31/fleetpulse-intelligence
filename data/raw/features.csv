@@ -1,0 +1,9 @@
+feature_id,feature_name,category,min_tier
+F01,Live Map,Tracking,Basic
+F02,Trip History,Tracking,Basic
+F03,Reports,Analytics,Basic
+F04,Dashboards,Analytics,Basic
+F05,Driver Safety Scoring,Safety,Pro
+F06,Fuel Analytics,Efficiency,Pro
+F07,Maintenance Alerts,Maintenance,Pro
+F08,API & Marketplace Integrations,Integrations,Enterprise
