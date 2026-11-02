@@ -121,6 +121,30 @@ SELECT m.month_start, m.mrr,
        COALESCE(ch.churned_mrr, 0) AS churned_mrr
 FROM m LEFT JOIN ch ON ch.month_start = m.month_start;
 
+-- Cohort retention: customers active in the first month, tracked by tier
+CREATE OR REPLACE VIEW mart_cohort_retention AS
+WITH m0 AS (SELECT MIN(month_start) AS first_month FROM fact_subscriptions),
+cohort AS (
+  SELECT s.customer_id, c.subscription_tier AS cohort
+  FROM fact_subscriptions s
+  JOIN dim_customers c ON c.customer_id = s.customer_id
+  JOIN m0 ON s.month_start = m0.first_month
+  WHERE s.status = 'active'),
+sizes AS (SELECT cohort, COUNT(*) AS cohort_size FROM cohort GROUP BY 1)
+SELECT co.cohort,
+       date_diff('month', m0.first_month, s.month_start) AS months_since_start,
+       sz.cohort_size,
+       COUNT(*) FILTER (WHERE s.status = 'active') AS retained,
+       ROUND(100.0 * COUNT(*) FILTER (WHERE s.status = 'active') / sz.cohort_size, 1) AS retention_pct
+FROM cohort co
+JOIN fact_subscriptions s ON s.customer_id = co.customer_id
+CROSS JOIN m0
+JOIN sizes sz ON sz.cohort = co.cohort
+GROUP BY 1, 2, 3;
+
+-- Preview: cohort retention
+SELECT * FROM mart_cohort_retention ORDER BY cohort, months_since_start;
+
 -- Preview: product adoption
 SELECT * FROM mart_product_adoption ORDER BY month_start;
 

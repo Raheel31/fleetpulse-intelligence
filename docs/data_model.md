@@ -109,3 +109,6 @@ These rules mostly pass by construction on synthetic data. They show that the lo
 - Small segments: Europe Basic is about 35 customers, so the near-dormant group is only a handful of accounts. Treat findings as indicative.
 - Synthetic data: findings illustrate method, not real customer behaviour.
 - Full refresh load: production would use incremental, partitioned loads and upserts on the grain keys.
+- Calendar effect: the current 30-day window has one fewer weekday and one more weekend day than the prior window, which overstates the headline decline by roughly 2 points. Untouched segments drift about -2% for this reason. Full 7-day blocks (I5) are unaffected.
+- No new-customer acquisition after July, so MRR and customer counts trend down. This is a property of the synthetic data.
+- Customer-level activation, DAU, WAU and MAU are saturated at about 100% and cannot detect depth-of-usage changes. Events per active customer and events per adopter do.
