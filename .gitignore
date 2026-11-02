@@ -1,5 +1,30 @@
-.venv/
+# Python
 __pycache__/
-data/warehouse/
-*.duckdb
+*.py[cod]
+*.pyd
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
 .env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Database runtime files
+data/warehouse/*.duckdb
+data/warehouse/*.wal
+
+# OS
+.DS_Store
+Thumbs.db
