@@ -23,8 +23,8 @@ CHECKS = {
         SELECT COUNT(*) FROM fact_platform_events e
         JOIN dim_customers c USING (customer_id)
         JOIN dim_features f USING (feature_id)
-        WHERE CASE c.subscription_tier WHEN 'Basic' THEN 1 WHEN 'Pro' THEN 2 ELSE 3 END
-            < CASE f.min_tier WHEN 'Basic' THEN 1 WHEN 'Pro' THEN 2 ELSE 3 END""",
+        WHERE CASE c.subscription_tier WHEN 'Basic' THEN 1 WHEN 'Pro' THEN 2 WHEN 'Enterprise' THEN 3 END
+            < CASE f.min_tier WHEN 'Basic' THEN 1 WHEN 'Pro' THEN 2 WHEN 'Enterprise' THEN 3 END""",
     "churned subscription with MRR > 0": """
         SELECT COUNT(*) FROM fact_subscriptions WHERE status = 'churned' AND mrr_usd > 0""",
     "events outside dim_date range": """
@@ -33,6 +33,25 @@ CHECKS = {
     "null customer attributes": """
         SELECT COUNT(*) FROM dim_customers
         WHERE region IS NULL OR industry IS NULL OR subscription_tier IS NULL""",
+        "unknown subscription tier": """
+        SELECT COUNT(*) FROM dim_customers
+        WHERE subscription_tier NOT IN ('Basic', 'Pro', 'Enterprise')""",
+    "vehicle activity after customer churn": """
+        SELECT COUNT(*) FROM fact_vehicle_activity a
+        JOIN dim_vehicles v USING (vehicle_id)
+        JOIN dim_customers c USING (customer_id)
+        WHERE c.churn_date IS NOT NULL AND a.activity_date > c.churn_date""",
+    "negative MRR or billable vehicles": """
+        SELECT COUNT(*) FROM fact_subscriptions WHERE mrr_usd < 0 OR billable_vehicles < 0""",
+    "subscription rows after churn month": """
+        SELECT COUNT(*) FROM fact_subscriptions s
+        JOIN dim_customers c USING (customer_id)
+        WHERE c.churn_date IS NOT NULL AND s.month_start > date_trunc('month', c.churn_date)""",
+    "MRR is not billable vehicles x tier price": """
+        SELECT COUNT(*) FROM fact_subscriptions s
+        JOIN dim_customers c USING (customer_id)
+        WHERE s.status = 'active' AND s.mrr_usd <> s.billable_vehicles *
+              CASE c.subscription_tier WHEN 'Basic' THEN 12 WHEN 'Pro' THEN 20 WHEN 'Enterprise' THEN 30 END""",
 }
 
 
